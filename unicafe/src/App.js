@@ -63,12 +63,24 @@ const StatisticLine = ({ text, value }) => {
   );
 };
 
-const App = () => {
-  // guarda los clics de cada botón en su propio estado
-  const [good, setGood] = useState(0);
-  const [neutral, setNeutral] = useState(0);
-  const [bad, setBad] = useState(0);
+const MostVotedAnecdote = ({ votes, anecdote }) => {
+  return (
+    <>
+      <h3>Most voted anecdote</h3>
+      <p>
+        {votes}
+        {votes > 1 ? " votes" : " vote"}!!
+      </p>
+      <p>
+        <small>{anecdote}</small>
+      </p>
+    </>
+  );
+};
+
+const Anecdotes = () => {
   const [selected, setSelected] = useState(0);
+  const [votes, setVotes] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
 
   const anecdotes = [
     "If it hurts, do it more often.",
@@ -80,6 +92,54 @@ const App = () => {
     "Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.",
     "The only way to go fast, is to go well.",
   ];
+
+  const handleClickGenerate = () => {
+    let random = Math.floor(Math.random() * anecdotes.length);
+    setSelected(random);
+  };
+
+  const handleClickVote = () => {
+    const copyVotes = [...votes];
+
+    copyVotes[selected] += 1;
+
+    setVotes(copyVotes);
+  };
+
+  const mostVotedIndex = votes
+    .map((vote, index) => ({ index, vote }))
+    .sort((a, b) => b.vote - a.vote)[0].index;
+
+  return (
+    <>
+      <hr />
+      <h3>Message of the day</h3>
+
+      <Button text={"Vote"} handleClick={handleClickVote} />
+      <Button text={"Generate"} handleClick={handleClickGenerate} />
+
+      <div>
+        <p>{anecdotes[selected]}</p>
+        <p>Number of votes: {votes[selected]}</p>
+      </div>
+
+      {votes.some((vote) => vote > 0) ? (
+        <MostVotedAnecdote
+          votes={votes[mostVotedIndex]}
+          anecdote={anecdotes[mostVotedIndex]}
+        />
+      ) : (
+        <p>No votes yet</p>
+      )}
+    </>
+  );
+};
+
+const App = () => {
+  // guarda los clics de cada botón en su propio estado
+  const [good, setGood] = useState(0);
+  const [neutral, setNeutral] = useState(0);
+  const [bad, setBad] = useState(0);
 
   // Evento click en good
   const handleClickGood = () => {
@@ -94,13 +154,6 @@ const App = () => {
   // Evento click en bad
   const handleClickBad = () => {
     setBad(bad + 1);
-  };
-
-  const handleClickGenerate = () => {
-    let random = Math.floor(Math.random() * anecdotes.length);
-    console.log(anecdotes.length - 1);
-
-    setSelected(random);
   };
 
   const feedbackGiven = bad > 0 || neutral > 0 || good > 0;
@@ -119,14 +172,7 @@ const App = () => {
         <p>No feedback given</p>
       )}
 
-      <hr />
-      <h3>Message of the day</h3>
-
-      <Button text={"Generate"} handleClick={handleClickGenerate} />
-
-      <div>
-        <p>{anecdotes[selected]}</p>
-      </div>
+      <Anecdotes />
     </>
   );
 };
